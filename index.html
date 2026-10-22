@@ -1,0 +1,1008 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body style="margin:0"><title>Dukaan Code Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+/* Layout: ek workbench. Left me dekhne wala code, beech me likhne ki jagah, right me live dukaan. */
+:root {
+  --bg: #eef1f7;
+  --surface: #ffffff;
+  --surface-2: #f4f6fb;
+  --ink: #131830;
+  --muted: #5d6584;
+  --line: #dbe0ee;
+  --accent: #2a56f0;
+  --on-accent: #ffffff;
+  --mango: #ffb21e;
+  --good: #118a57;
+  --good-bg: #dff4e9;
+  --bad: #d02c47;
+  --bad-bg: #fde2e7;
+  --code-bg: #fbfcff;
+  --cur-bg: #fff6dd;
+  --s-tag: #1f4fd8;
+  --s-attr: #a8510b;
+  --s-str: #0c7a4d;
+  --s-com: #8890aa;
+  --s-num: #c0410c;
+  --s-key: #7a35d8;
+  --s-fn: #0b7490;
+  --s-prop: #b3205f;
+  --s-sel: #1f4fd8;
+  --s-ent: #c0410c;
+  --f-display: "Bricolage Grotesque", "Trebuchet MS", system-ui, sans-serif;
+  --f-body: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --code-fs: 13.5px;
+  --code-lh: 22px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b0e1a; --surface: #131728; --surface-2: #191e33; --ink: #e7eaf8; --muted: #98a1c0; --line: #262c47;
+    --accent: #7390ff; --on-accent: #0b0e1a; --mango: #ffc247; --good: #4fd69c; --good-bg: #12362b;
+    --bad: #ff7a90; --bad-bg: #40202b; --code-bg: #0f1322; --cur-bg: #2a2713;
+    --s-tag: #82a6ff; --s-attr: #ffc56e; --s-str: #74dca8; --s-com: #6a7295; --s-num: #ff9e64;
+    --s-key: #bf9cff; --s-fn: #61d6ea; --s-prop: #ff8fb8; --s-sel: #82a6ff; --s-ent: #ff9e64;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b0e1a; --surface: #131728; --surface-2: #191e33; --ink: #e7eaf8; --muted: #98a1c0; --line: #262c47;
+  --accent: #7390ff; --on-accent: #0b0e1a; --mango: #ffc247; --good: #4fd69c; --good-bg: #12362b;
+  --bad: #ff7a90; --bad-bg: #40202b; --code-bg: #0f1322; --cur-bg: #2a2713;
+  --s-tag: #82a6ff; --s-attr: #ffc56e; --s-str: #74dca8; --s-com: #6a7295; --s-num: #ff9e64;
+  --s-key: #bf9cff; --s-fn: #61d6ea; --s-prop: #ff8fb8; --s-sel: #82a6ff; --s-ent: #ff9e64;
+  color-scheme: dark;
+}
+@media (max-width: 900px) {
+  :root { --code-fs: 16px; --code-lh: 25px; }
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 15px;
+  line-height: 1.5;
+}
+button { font-family: inherit; }
+.app {
+  height: 100%;
+  max-width: 1800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-block: 14px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+[data-file="html"] { --ftype: #e8643a; }
+[data-file="css"] { --ftype: #3b82f6; }
+[data-file="js"] { --ftype: #e8b92d; }
+
+/* ---------- top bar ---------- */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; animation: rise .5s ease backwards; }
+.brand { display: flex; align-items: center; gap: 10px; font-family: var(--f-display); font-weight: 800; font-size: 22px; letter-spacing: -.02em; line-height: 1.1; }
+.brand svg { width: 30px; height: 30px; flex: none; }
+.brand small { display: block; margin-top: 2px; font-family: var(--f-body); font-weight: 500; font-size: 12.5px; letter-spacing: 0; color: var(--muted); }
+.controls { display: flex; align-items: center; gap: 12px 22px; flex-wrap: wrap; }
+.switch { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; cursor: pointer; user-select: none; }
+.switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.switch .track { width: 34px; height: 20px; border-radius: 20px; background: var(--line); position: relative; transition: background .2s; }
+.switch .track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 14px; height: 14px; border-radius: 50%; background: var(--surface); box-shadow: 0 1px 3px rgba(0,0,0,.3); transition: transform .2s; }
+.switch input:checked + .track { background: var(--accent); }
+.switch input:checked + .track::after { transform: translateX(14px); }
+.switch input:focus-visible + .track { outline: 2px solid var(--accent); outline-offset: 2px; }
+.overall { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.mini { width: 90px; height: 6px; border-radius: 6px; background: var(--line); overflow: hidden; }
+.mini i { display: block; height: 100%; width: 0; background: var(--good); transition: width .5s ease; }
+
+/* ---------- lesson strip ---------- */
+.lessons { display: flex; align-items: center; gap: 0; overflow-x: auto; padding: 4px 0 8px; scrollbar-width: thin; animation: rise .5s .05s ease backwards; }
+.group { display: flex; align-items: center; gap: 8px; flex: none; padding: 0 16px; border-left: 1px solid var(--line); }
+.group:first-child { padding-left: 0; border-left: 0; }
+.group-label { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.pill {
+  display: flex; align-items: center; gap: 8px; flex: none;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  border-radius: 10px; padding: 5px 12px 5px 5px;
+  font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer;
+  transition: transform .15s, border-color .15s, background .2s;
+}
+.pill .n { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-2); border: 1px solid var(--line); font-family: var(--f-mono); font-size: 11px; font-weight: 700; }
+.pill:hover { transform: translateY(-2px); border-color: var(--accent); }
+.pill:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pill.done .n { background: var(--good); color: #fff; border-color: var(--good); }
+.pill.active { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.pill.active .n { background: var(--on-accent); color: var(--accent); border-color: transparent; }
+
+/* ---------- lesson info ---------- */
+.info { display: flex; justify-content: space-between; align-items: flex-end; gap: 14px 24px; flex-wrap: wrap; animation: rise .5s .1s ease backwards; }
+.info-text { min-width: 0; flex: 1 1 380px; }
+.kicker { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+.info h2 { font-family: var(--f-display); font-weight: 800; font-size: clamp(22px, 2.4vw, 30px); line-height: 1.1; letter-spacing: -.02em; margin: 3px 0 4px; text-wrap: balance; }
+.info p { margin: 0; color: var(--muted); max-width: 64ch; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.chip { font-family: var(--f-mono); font-size: 11.5px; padding: 2px 8px; border-radius: 6px; background: var(--surface); border: 1px solid var(--line); }
+.swap { animation: swap .35s ease; }
+
+.ticket { display: grid; grid-template-columns: repeat(4, auto); background: var(--surface); border: 1px dashed var(--muted); border-radius: 10px; font-variant-numeric: tabular-nums; }
+.ticket div { padding: 7px 16px; border-left: 1px dashed var(--line); text-align: center; }
+.ticket div:first-child { border-left: 0; }
+.ticket b { display: block; font-family: var(--f-mono); font-size: 18px; line-height: 1.2; }
+.ticket small { font-size: 10.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.bar { height: 4px; border-radius: 4px; background: var(--line); overflow: hidden; flex: none; }
+.bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--mango)); transition: width .35s ease; }
+
+/* ---------- workbench ---------- */
+.split {
+  flex: 1; min-height: 0; display: grid; gap: 12px;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: minmax(0, 1.15fr) minmax(0, .85fr);
+  grid-template-areas: "ref edit" "ref prev";
+}
+.pane { display: flex; flex-direction: column; min-width: 0; min-height: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; position: relative; animation: rise .55s .15s ease backwards; }
+.ref { grid-area: ref; }
+.edit { grid-area: edit; animation-delay: .22s; transition: border-color .2s, box-shadow .2s; }
+.prev { grid-area: prev; animation-delay: .3s; }
+.edit:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
+@media (min-width: 1400px) {
+  .split { grid-template-columns: 1fr 1fr .9fr; grid-template-rows: minmax(0, 1fr); grid-template-areas: "ref edit prev"; }
+}
+@media (max-width: 900px) {
+  .app { height: auto; min-height: 100%; }
+  .split { display: flex; flex-direction: column; }
+  .ref { height: 380px; }
+  .edit { height: 420px; }
+  .prev { height: 460px; }
+  .ticket div { padding: 7px 10px; }
+}
+
+.phead { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--line); background: var(--surface-2); min-height: 44px; flex: none; }
+.role { font-family: var(--f-display); font-weight: 800; font-size: 16px; }
+.hint { font-size: 12.5px; color: var(--muted); margin-left: 6px; }
+.row { display: flex; align-items: center; gap: 10px; }
+.file { display: inline-flex; align-items: center; gap: 6px; font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+.file::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--ftype); }
+.ghost { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 8px; padding: 4px 10px; font-size: 12.5px; font-weight: 600; cursor: pointer; transition: border-color .15s, transform .15s; }
+.ghost:hover { border-color: var(--accent); transform: translateY(-1px); }
+.ghost:focus-visible, .primary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.primary { border: 0; background: var(--accent); color: var(--on-accent); border-radius: 8px; padding: 8px 16px; font-size: 14px; font-weight: 700; cursor: pointer; transition: transform .15s; }
+.primary:hover { transform: translateY(-2px); }
+
+/* reference code */
+.code { flex: 1; position: relative; overflow: auto; padding: 10px 0 60px; background: var(--code-bg); font-family: var(--f-mono); font-size: var(--code-fs); line-height: var(--code-lh); font-variant-ligatures: none; tab-size: 2; user-select: none; -webkit-user-select: none; scrollbar-width: thin; }
+.ln { display: flex; white-space: pre; min-height: var(--code-lh); padding-right: 20px; border-left: 3px solid transparent; transition: background .25s, opacity .3s, border-color .25s; width: max-content; min-width: 100%; }
+.ln .no { flex: none; width: 46px; text-align: right; padding-right: 14px; color: var(--muted); opacity: .7; }
+.ln.done { opacity: .5; border-left-color: var(--good); }
+.ln.fresh { animation: sweep .9s ease; }
+.ln.bad { border-left-color: var(--bad); background: var(--bad-bg); }
+.ln.cur { background: var(--cur-bg); border-left-color: var(--mango); }
+.ty { opacity: .45; }
+.nx { background: var(--mango); color: #131830 !important; border-radius: 3px; animation: blink 1.1s ease-in-out infinite; }
+.nx.enter { padding: 0 6px; margin-left: 2px; font-weight: 700; }
+.s-tag { color: var(--s-tag); } .s-attr { color: var(--s-attr); } .s-str { color: var(--s-str); }
+.s-com { color: var(--s-com); font-style: italic; } .s-num { color: var(--s-num); } .s-key { color: var(--s-key); }
+.s-fn { color: var(--s-fn); } .s-prop { color: var(--s-prop); } .s-sel { color: var(--s-sel); } .s-ent { color: var(--s-ent); }
+
+/* typing pad */
+.pad { flex: 1; min-height: 0; display: flex; background: var(--code-bg); }
+.gut { flex: none; width: 46px; overflow: hidden; padding: 12px 0; text-align: right; font-family: var(--f-mono); font-size: var(--code-fs); line-height: var(--code-lh); color: var(--muted); opacity: .7; user-select: none; }
+.gut div { padding-right: 14px; height: var(--code-lh); }
+.stack { position: relative; flex: 1; min-width: 0; }
+#mirror, #input {
+  position: absolute; inset: 0; margin: 0; padding: 12px 16px 60px; border: 0;
+  font-family: var(--f-mono); font-size: var(--code-fs); line-height: var(--code-lh); letter-spacing: 0;
+  font-variant-ligatures: none; tab-size: 2; white-space: pre; word-wrap: normal; overflow-wrap: normal;
+}
+#mirror { overflow: hidden; pointer-events: none; color: var(--ink); }
+#mirror .bad { background: var(--bad-bg); color: var(--bad); box-shadow: inset 0 -2px 0 var(--bad); }
+#input { overflow: auto; resize: none; outline: none; background: transparent; color: transparent; caret-color: var(--accent); scrollbar-width: none; -webkit-text-fill-color: transparent; }
+#input::-webkit-scrollbar { display: none; }
+#input::placeholder { color: var(--muted); opacity: .75; -webkit-text-fill-color: var(--muted); }
+#input::selection { background: color-mix(in srgb, var(--accent) 30%, transparent); }
+.pfoot { display: flex; justify-content: space-between; gap: 12px; padding: 7px 12px; border-top: 1px solid var(--line); background: var(--surface-2); font-size: 12.5px; flex: none; font-variant-numeric: tabular-nums; }
+.status { font-weight: 600; color: var(--muted); }
+.status.ok { color: var(--good); } .status.err { color: var(--bad); } .status.warn { color: var(--s-attr); }
+.shake { animation: shake .4s; }
+
+/* completion receipt */
+.donewrap { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; background: color-mix(in srgb, var(--bg) 72%, transparent); backdrop-filter: blur(3px); opacity: 0; pointer-events: none; transition: opacity .3s; z-index: 5; }
+.donewrap.show { opacity: 1; pointer-events: auto; }
+.receipt { position: relative; width: min(330px, 100%); background: var(--surface); border: 1px dashed var(--muted); border-radius: 14px; padding: 22px 22px 18px; transform: translateY(24px) scale(.96); transition: transform .45s cubic-bezier(.2, 1.3, .4, 1); }
+.show .receipt { transform: none; }
+.r-kicker { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--good); }
+.receipt h3 { margin: 4px 0 14px; font-family: var(--f-display); font-weight: 800; font-size: 23px; line-height: 1.15; letter-spacing: -.01em; padding-right: 70px; }
+.rows { margin: 0 0 18px; display: grid; gap: 6px; font-variant-numeric: tabular-nums; }
+.rows div { display: flex; gap: 8px; align-items: baseline; }
+.rows dt { flex: 1; display: flex; gap: 8px; align-items: baseline; color: var(--muted); font-size: 14px; }
+.rows dt::after { content: ""; flex: 1; border-bottom: 2px dotted var(--line); transform: translateY(-3px); }
+.rows dd { margin: 0; font-family: var(--f-mono); font-weight: 700; }
+.r-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.stamp { position: absolute; top: 20px; right: 16px; border: 3px solid var(--accent); color: var(--accent); border-radius: 6px; padding: 1px 9px; font-family: var(--f-display); font-weight: 800; font-size: 18px; letter-spacing: .12em; opacity: 0; transform: rotate(-12deg) scale(2.4); }
+.show .stamp { animation: stamp .5s .35s cubic-bezier(.2, 1.4, .4, 1) forwards; }
+.cf { position: absolute; left: 50%; top: 45%; width: 8px; height: 12px; border-radius: 2px; pointer-events: none; animation: burst 1.2s cubic-bezier(.2, .8, .3, 1) forwards; }
+
+/* preview */
+.chrome { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--surface-2); border-bottom: 1px solid var(--line); flex: none; }
+.dots { display: flex; gap: 5px; }
+.dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--line); }
+.url { flex: 1; min-width: 0; font-family: var(--f-mono); font-size: 12px; color: var(--muted); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 3px 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.live { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--good); display: inline-flex; align-items: center; gap: 5px; }
+.live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--good); animation: blink 1.6s ease-in-out infinite; }
+#frame { flex: 1; min-height: 0; width: 100%; border: 0; background: #fff; }
+.console { flex: none; padding: 6px 12px; border-top: 1px solid var(--line); background: var(--surface-2); font-family: var(--f-mono); font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.console.ok { color: var(--good); } .console.err { color: var(--bad); }
+
+
+[hidden] { display: none !important; }
+.modal { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px; background: color-mix(in srgb, var(--bg) 70%, transparent); backdrop-filter: blur(3px); }
+.mcard { width: min(480px, 100%); max-height: 100%; overflow: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; display: grid; gap: 10px; }
+.mcard h3 { margin: 0; font-family: var(--f-display); font-weight: 800; font-size: 21px; }
+.mcard p, .mcard ol { margin: 0; color: var(--muted); font-size: 14px; }
+.mcard ol { padding-left: 20px; display: grid; gap: 4px; }
+.mcard a { color: var(--accent); }
+.mcard input[type="password"] { width: 100%; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); font-family: var(--f-mono); font-size: 13px; }
+.mcard hr { border: 0; border-top: 1px solid var(--line); width: 100%; margin: 4px 0; }
+.mcard label.ghost { display: inline-block; }
+.ghstatus { min-height: 1.4em; font-weight: 600; color: var(--good) !important; }
+.ghstatus.err { color: var(--bad) !important; }
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+@keyframes swap { from { opacity: .2; transform: translateY(8px); } }
+@keyframes sweep { from { background: var(--good-bg); } }
+@keyframes blink { 50% { opacity: .55; } }
+@keyframes shake { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+@keyframes stamp { to { opacity: .92; transform: rotate(-12deg) scale(1); } }
+@keyframes burst { from { transform: translate(0, 0) rotate(0); opacity: 1; } to { transform: translate(var(--x), calc(var(--y) + 170px)) rotate(var(--r)); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+</style>
+
+<div class="app" id="app" data-file="html">
+  <header class="top">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 5h12l10 10-12 12L5 17z" fill="var(--accent)" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/><circle cx="11" cy="11" r="2.4" fill="var(--bg)"/></svg>
+      <div>Dukaan Code Lab<small>Learn to code an online shop by typing it out</small></div>
+    </div>
+    <div class="controls">
+      <label class="switch" title="When ON, spaces and indentation must match exactly. When OFF, only the code characters are checked.">
+        <input type="checkbox" id="strict"><span class="track"></span><span>Spacing strict</span>
+      </label>
+      <button class="primary" id="saveBtn" type="button">Save</button>
+      <button class="ghost" id="syncBtn" type="button" hidden>Sync</button>
+      <div class="overall"><span id="overallTxt">0 / 0 lessons</span><div class="mini"><i id="overallBar"></i></div></div>
+    </div>
+  </header>
+
+  <nav class="lessons" id="lessons" aria-label="Lessons"></nav>
+
+  <section class="info">
+    <div class="info-text" id="infoText">
+      <div class="kicker" id="kicker"></div>
+      <h2 id="title"></h2>
+      <p id="desc"></p>
+      <div class="chips" id="chips"></div>
+    </div>
+    <div class="ticket" aria-label="Typing stats">
+      <div><b id="sPct">0%</b><small>Progress</small></div>
+      <div><b id="sTime">00:00</b><small>Time</small></div>
+      <div><b id="sWpm">--</b><small>Speed wpm</small></div>
+      <div><b id="sAcc">--</b><small>Accuracy</small></div>
+    </div>
+  </section>
+  <div class="bar"><i id="barFill"></i></div>
+
+  <main class="split">
+    <section class="pane ref" aria-label="Reference code">
+      <div class="phead"><div><span class="role">Read</span><span class="hint">type what you see</span></div><span class="file" id="fileRef"></span></div>
+      <div class="code" id="code"></div>
+    </section>
+
+    <section class="pane edit" id="editPane" aria-label="Typing pad">
+      <div class="phead"><div><span class="role">Type</span><span class="hint">one character at a time</span></div><div class="row"><span class="file" id="fileEd"></span><button class="ghost" id="reset" type="button">Clear</button></div></div>
+      <div class="pad">
+        <div class="gut" id="gut" aria-hidden="true"></div>
+        <div class="stack">
+          <pre id="mirror" aria-hidden="true"></pre>
+          <textarea id="input" aria-label="Type the code here" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off" placeholder="Type here. On the left, the yellow character is the next key."></textarea>
+        </div>
+      </div>
+      <div class="pfoot"><span class="status" id="status"></span><span id="pos">Ln 1, Col 1</span></div>
+
+      <div class="donewrap" id="done">
+        <div class="receipt" role="dialog" aria-label="Lesson complete">
+          <div class="stamp">PAID</div>
+          <p class="r-kicker">Lesson complete</p>
+          <h3 id="doneTitle"></h3>
+          <dl class="rows">
+            <div><dt>Time</dt><dd id="dTime"></dd></div>
+            <div><dt>Speed</dt><dd id="dWpm"></dd></div>
+            <div><dt>Accuracy</dt><dd id="dAcc"></dd></div>
+          </dl>
+          <div class="r-actions">
+            <button class="primary" id="next" type="button">Next lesson</button>
+            <button class="ghost" id="again" type="button">Try again</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="pane prev" aria-label="Live preview">
+      <div class="chrome"><span class="dots"><i></i><i></i><i></i></span><span class="url">dukaan.local/index.html</span><span class="live">Live</span></div>
+      <iframe id="frame" title="Live preview" sandbox="allow-scripts"></iframe>
+      <div class="console" id="console"></div>
+    </section>
+  </main>
+</div>
+
+<div class="modal" id="syncModal" hidden>
+  <div class="mcard" role="dialog" aria-label="Sync progress">
+    <h3>Keep your progress on every device</h3>
+    <p>This site has no server, so progress is saved in your browser. To get it on any device, save it to a private GitHub Gist:</p>
+    <ol>
+      <li>Open <a href="https://github.com/settings/tokens/new?description=Dukaan%20Code%20Lab&amp;scopes=gist" target="_blank" rel="noopener">this GitHub page</a> and create a token (only the <b>gist</b> permission is needed).</li>
+      <li>Paste the token below and press Connect.</li>
+      <li>On your other devices, connect with the same token.</li>
+    </ol>
+    <input id="ghToken" type="password" placeholder="Paste your GitHub token" autocomplete="off" spellcheck="false">
+    <div class="r-actions">
+      <button class="primary" id="ghConnect" type="button">Connect</button>
+      <button class="ghost" id="ghDisc" type="button">Disconnect</button>
+      <button class="ghost" id="syncClose" type="button">Close</button>
+    </div>
+    <p class="ghstatus" id="ghStatus"></p>
+    <hr>
+    <p>No token? Move progress by file instead.</p>
+    <div class="r-actions">
+      <button class="ghost" id="exportBtn" type="button">Export progress</button>
+      <label class="ghost" for="importFile">Import progress</label>
+      <input id="importFile" type="file" accept="application/json,.json" hidden>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+'use strict';
+var LESSONS = [{"id": "html-1", "file": "html", "fname": "index.html", "title": "Navbar and Hero", "desc": "The top of the site: logo, menu, cart button and a big banner.", "learn": ["\u003cheader>", "\u003cnav>", "class and id", "\u003csection>"], "code": "\u003c!DOCTYPE html>\n\u003chtml lang=\"en\">\n\u003chead>\n  \u003cmeta charset=\"UTF-8\">\n  \u003cmeta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  \u003ctitle>Dukaan - Online Shop\u003c/title>\n  \u003clink rel=\"stylesheet\" href=\"style.css\">\n\u003c/head>\n\u003cbody>\n  \u003c!-- Navbar: logo, menu and cart button -->\n  \u003cheader class=\"navbar\">\n    \u003ch1 class=\"logo\">Dukaan\u003c/h1>\n    \u003cnav class=\"menu\">\n      \u003ca href=\"#products\">Products\u003c/a>\n      \u003ca href=\"#footer\">Contact\u003c/a>\n    \u003c/nav>\n    \u003cbutton id=\"cart-btn\" class=\"cart-btn\">\n      Cart \u003cspan id=\"cart-count\">0\u003c/span>\n    \u003c/button>\n  \u003c/header>\n\n  \u003c!-- Hero: big banner on the first screen -->\n  \u003csection class=\"hero\">\n    \u003cp class=\"hero-tag\">Diwali Sale\u003c/p>\n    \u003ch2>New style, low price\u003c/h2>\n    \u003cp>Free delivery on every order.\u003c/p>\n    \u003ca href=\"#products\" class=\"btn\">Shop Now\u003c/a>\n  \u003c/section>"}, {"id": "html-2", "file": "html", "fname": "index.html", "title": "Products Section", "desc": "Filter buttons and the product grid. You write one card by hand and JavaScript builds the rest.", "learn": ["\u003cmain>", "data-cat attribute", "\u003carticle> card", "HTML entities"], "code": "  \u003c!-- Products: this grid is filled by JavaScript later -->\n  \u003cmain class=\"container\">\n    \u003ch2 id=\"products\" class=\"section-title\">Our Products\u003c/h2>\n\n    \u003cdiv class=\"filters\">\n      \u003cbutton class=\"filter active\" data-cat=\"all\">All\u003c/button>\n      \u003cbutton class=\"filter\" data-cat=\"fashion\">Fashion\u003c/button>\n      \u003cbutton class=\"filter\" data-cat=\"gadgets\">Gadgets\u003c/button>\n    \u003c/div>\n\n    \u003cdiv id=\"product-grid\" class=\"product-grid\">\n      \u003carticle class=\"card\">\n        \u003cdiv class=\"card-img\">&#128095;\u003c/div>\n        \u003cdiv class=\"card-body\">\n          \u003ch3>Sneakers\u003c/h3>\n          \u003cp class=\"price\">&#8377;1,999\u003c/p>\n          \u003cbutton class=\"add-btn\">Add to Cart\u003c/button>\n        \u003c/div>\n      \u003c/article>\n    \u003c/div>\n  \u003c/main>"}, {"id": "html-3", "file": "html", "fname": "index.html", "title": "Cart, Footer and Script", "desc": "The sliding cart, toast message, footer, and linking the JavaScript file.", "learn": ["\u003caside>", "\u003cul> list", "\u003cfooter>", "\u003cscript src>"], "code": "  \u003c!-- Cart drawer: slides in from the side -->\n  \u003caside id=\"cart\" class=\"cart\">\n    \u003cdiv class=\"cart-head\">\n      \u003ch2>Your Cart\u003c/h2>\n      \u003cbutton id=\"close-cart\" class=\"close-btn\">&times;\u003c/button>\n    \u003c/div>\n    \u003cul id=\"cart-items\" class=\"cart-items\">\u003c/ul>\n    \u003cdiv class=\"cart-foot\">\n      \u003cp>Total: \u003cstrong id=\"cart-total\">&#8377;0\u003c/strong>\u003c/p>\n      \u003cbutton id=\"checkout-btn\" class=\"btn btn-full\">Checkout\u003c/button>\n    \u003c/div>\n  \u003c/aside>\n\n  \u003cdiv id=\"overlay\" class=\"overlay\">\u003c/div>\n  \u003cdiv id=\"toast\" class=\"toast\">\u003c/div>\n\n  \u003cfooter id=\"footer\" class=\"footer\">\n    \u003cp>&copy; 2026 Dukaan. Built for practice.\u003c/p>\n  \u003c/footer>\n\n  \u003cscript src=\"script.js\">\u003c/script>\n\u003c/body>\n\u003c/html>"}, {"id": "css-1", "file": "css", "fname": "style.css", "title": "Colors and Navbar", "desc": "Store colors in variables, reset defaults and lay out the navbar in one row with flexbox.", "learn": [":root variables", "reset (*)", "flexbox", "position: sticky"], "code": "/* Keep colors in one place and reuse them */\n:root {\n  --bg: #fafaf7;\n  --ink: #1d1d1b;\n  --brand: #e4572e;\n  --muted: #6b6b66;\n  --card: #ffffff;\n}\n\n* {\n  box-sizing: border-box;\n  margin: 0;\n  padding: 0;\n}\n\nhtml {\n  scroll-behavior: smooth;\n}\n\nbody {\n  font-family: Arial, sans-serif;\n  background: var(--bg);\n  color: var(--ink);\n}\n\n/* Navbar */\n.navbar {\n  display: flex;\n  align-items: center;\n  justify-content: space-between;\n  padding: 16px 32px;\n  background: var(--card);\n  position: sticky;\n  top: 0;\n  z-index: 10;\n  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);\n}\n\n.logo {\n  color: var(--brand);\n  font-size: 24px;\n}\n\n.menu a {\n  margin: 0 12px;\n  color: var(--ink);\n  text-decoration: none;\n}\n\n.menu a:hover {\n  color: var(--brand);\n}"}, {"id": "css-2", "file": "css", "fname": "style.css", "title": "Button and Hero Banner", "desc": "The cart button, a gradient banner and a fadeUp animation.", "learn": ["linear-gradient", "@keyframes", "transition", ":hover"], "code": "/* Cart button */\n.cart-btn {\n  background: var(--ink);\n  color: white;\n  border: none;\n  padding: 10px 18px;\n  border-radius: 8px;\n  font-size: 15px;\n  cursor: pointer;\n}\n\n.cart-btn span {\n  background: var(--brand);\n  border-radius: 20px;\n  padding: 2px 8px;\n  margin-left: 6px;\n}\n\n.cart-btn.bump {\n  animation: bump 0.4s ease;\n}\n\n@keyframes bump {\n  50% {\n    transform: scale(1.15);\n  }\n}\n\n/* Hero banner */\n.hero {\n  text-align: center;\n  padding: 80px 20px;\n  color: white;\n  background: linear-gradient(135deg, #e4572e, #f2a65a);\n  animation: fadeUp 0.8s ease both;\n}\n\n.hero h2 {\n  font-size: 44px;\n  margin: 10px 0;\n}\n\n.hero-tag {\n  display: inline-block;\n  background: rgba(255, 255, 255, 0.25);\n  padding: 4px 14px;\n  border-radius: 20px;\n}\n\n.btn {\n  display: inline-block;\n  margin-top: 20px;\n  background: var(--ink);\n  color: white;\n  text-decoration: none;\n  border: none;\n  padding: 12px 26px;\n  border-radius: 8px;\n  font-size: 16px;\n  cursor: pointer;\n  transition: transform 0.2s;\n}\n\n.btn:hover {\n  transform: translateY(-3px);\n}\n\n@keyframes fadeUp {\n  from {\n    opacity: 0;\n    transform: translateY(30px);\n  }\n  to {\n    opacity: 1;\n    transform: translateY(0);\n  }\n}"}, {"id": "css-3", "file": "css", "fname": "style.css", "title": "Layout and Grid", "desc": "Center the page, style the filter buttons and build a responsive product grid.", "learn": ["margin: 0 auto", "CSS Grid", "auto-fill + minmax", ".filter.active"], "code": "/* Center the page content */\n.container {\n  max-width: 1100px;\n  margin: 0 auto;\n  padding: 40px 20px;\n}\n\n.section-title {\n  font-size: 28px;\n  margin-bottom: 16px;\n  scroll-margin-top: 90px;\n}\n\n/* Filter buttons */\n.filters {\n  display: flex;\n  gap: 10px;\n  margin-bottom: 24px;\n}\n\n.filter {\n  border: 1px solid #cccccc;\n  background: white;\n  padding: 8px 18px;\n  border-radius: 20px;\n  cursor: pointer;\n  transition: 0.2s;\n}\n\n.filter.active {\n  background: var(--ink);\n  color: white;\n  border-color: var(--ink);\n}\n\n/* Products grid */\n.product-grid {\n  display: grid;\n  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));\n  gap: 22px;\n}"}, {"id": "css-4", "file": "css", "fname": "style.css", "title": "Product Card", "desc": "Card shadow, lift on hover and the product image box.", "learn": ["box-shadow", "hover + transform", "place-items: center", "animation reuse"], "code": "/* Product card */\n.card {\n  background: var(--card);\n  border-radius: 14px;\n  overflow: hidden;\n  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07);\n  transition: transform 0.25s, box-shadow 0.25s;\n  animation: fadeUp 0.5s ease both;\n}\n\n.card:hover {\n  transform: translateY(-6px);\n  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.14);\n}\n\n.card-img {\n  height: 150px;\n  display: grid;\n  place-items: center;\n  font-size: 64px;\n  background: #f3ece4;\n}\n\n.card-body {\n  padding: 16px;\n}\n\n.card h3 {\n  font-size: 17px;\n}\n\n.price {\n  color: var(--brand);\n  font-weight: bold;\n  margin: 6px 0 12px;\n}\n\n.add-btn {\n  width: 100%;\n  padding: 10px;\n  border: none;\n  border-radius: 8px;\n  background: var(--brand);\n  color: white;\n  cursor: pointer;\n  transition: opacity 0.2s;\n}\n\n.add-btn:hover {\n  opacity: 0.88;\n}"}, {"id": "css-5", "file": "css", "fname": "style.css", "title": "Cart Drawer", "desc": "Hide the cart off-screen and slide it in when the 'open' class is added.", "learn": ["position: fixed", "translateX(100%)", "overlay", "pointer-events"], "code": "/* Cart drawer: starts outside the screen */\n.cart {\n  position: fixed;\n  top: 0;\n  right: 0;\n  width: 360px;\n  max-width: 100%;\n  height: 100%;\n  background: var(--card);\n  z-index: 30;\n  display: flex;\n  flex-direction: column;\n  transform: translateX(100%);\n  transition: transform 0.35s ease;\n  box-shadow: -6px 0 24px rgba(0, 0, 0, 0.15);\n}\n\n.cart.open {\n  transform: translateX(0);\n}\n\n/* Dark curtain behind the cart */\n.overlay {\n  position: fixed;\n  inset: 0;\n  background: rgba(0, 0, 0, 0.4);\n  opacity: 0;\n  pointer-events: none;\n  transition: opacity 0.3s;\n  z-index: 20;\n}\n\n.overlay.show {\n  opacity: 1;\n  pointer-events: auto;\n}\n\n.cart-head {\n  display: flex;\n  justify-content: space-between;\n  align-items: center;\n  padding: 18px 20px;\n  border-bottom: 1px solid #eeeeee;\n}\n\n.close-btn {\n  background: none;\n  border: none;\n  font-size: 28px;\n  cursor: pointer;\n}\n\n.cart-items {\n  flex: 1;\n  overflow-y: auto;\n  list-style: none;\n  padding: 10px 20px;\n}\n\n.cart-items li {\n  display: flex;\n  align-items: center;\n  gap: 10px;\n  padding: 12px 0;\n  border-bottom: 1px solid #f0f0f0;\n}\n\n.cart-items .empty {\n  justify-content: center;\n  color: var(--muted);\n}\n\n.ci-icon {\n  font-size: 28px;\n}\n\n.ci-info {\n  flex: 1;\n  display: flex;\n  flex-direction: column;\n}\n\n.ci-info small {\n  color: var(--muted);\n}\n\n.qty {\n  display: flex;\n  align-items: center;\n  gap: 8px;\n}\n\n.qty button {\n  width: 26px;\n  height: 26px;\n  border: 1px solid #cccccc;\n  background: white;\n  border-radius: 50%;\n  cursor: pointer;\n}\n\n.cart-foot {\n  padding: 18px 20px;\n  border-top: 1px solid #eeeeee;\n}\n\n.btn-full {\n  width: 100%;\n}"}, {"id": "css-6", "file": "css", "fname": "style.css", "title": "Toast, Footer, Mobile", "desc": "A small message from the bottom, the footer and a media query for small screens.", "learn": ["translate(-50%)", "opacity + transition", "@media", "max-width"], "code": "/* Toast message */\n.toast {\n  position: fixed;\n  bottom: 24px;\n  left: 50%;\n  transform: translate(-50%, 100px);\n  background: var(--ink);\n  color: white;\n  padding: 12px 22px;\n  border-radius: 30px;\n  opacity: 0;\n  transition: all 0.35s ease;\n  z-index: 40;\n}\n\n.toast.show {\n  opacity: 1;\n  transform: translate(-50%, 0);\n}\n\n/* Footer */\n.footer {\n  text-align: center;\n  padding: 28px;\n  background: var(--ink);\n  color: #bbbbbb;\n  margin-top: 40px;\n}\n\n/* For mobile */\n@media (max-width: 600px) {\n  .navbar {\n    padding: 14px 16px;\n  }\n\n  .menu {\n    display: none;\n  }\n\n  .hero h2 {\n    font-size: 30px;\n  }\n}"}, {"id": "js-1", "file": "js", "fname": "script.js", "title": "Product Data", "desc": "Create the products array and use map() to show a card for each product.", "learn": ["array of objects", "getElementById", "template literal", "map() + join()"], "code": "// Product data\nconst products = [\n  { id: 1, name: \"Sneakers\", price: 1999, cat: \"fashion\", icon: \"&#128095;\" },\n  { id: 2, name: \"Headphones\", price: 2499, cat: \"gadgets\", icon: \"&#127911;\" },\n  { id: 3, name: \"Smart Watch\", price: 3299, cat: \"gadgets\", icon: \"&#8986;\" },\n  { id: 4, name: \"Backpack\", price: 1299, cat: \"fashion\", icon: \"&#127890;\" },\n  { id: 5, name: \"Glasses\", price: 899, cat: \"fashion\", icon: \"&#128083;\" },\n  { id: 6, name: \"Camera\", price: 15999, cat: \"gadgets\", icon: \"&#128247;\" }\n];\n\n// The cart starts as an empty array\nlet cart = [];\n\n// Grab the HTML elements\nconst grid = document.getElementById(\"product-grid\");\nconst cartBtn = document.getElementById(\"cart-btn\");\nconst cartCount = document.getElementById(\"cart-count\");\nconst cartPanel = document.getElementById(\"cart\");\nconst cartItems = document.getElementById(\"cart-items\");\nconst cartTotal = document.getElementById(\"cart-total\");\nconst overlay = document.getElementById(\"overlay\");\nconst toast = document.getElementById(\"toast\");\n\n// Format the rupee amount nicely\nfunction rupees(amount) {\n  return \"&#8377;\" + amount.toLocaleString(\"en-IN\");\n}\n\n// Show products on screen\nfunction showProducts(category) {\n  const list =\n    category === \"all\"\n      ? products\n      : products.filter((p) => p.cat === category);\n\n  grid.innerHTML = list\n    .map(\n      (p) => `\n    \u003carticle class=\"card\">\n      \u003cdiv class=\"card-img\">${p.icon}\u003c/div>\n      \u003cdiv class=\"card-body\">\n        \u003ch3>${p.name}\u003c/h3>\n        \u003cp class=\"price\">${rupees(p.price)}\u003c/p>\n        \u003cbutton class=\"add-btn\" data-id=\"${p.id}\">Add to Cart\u003c/button>\n      \u003c/div>\n    \u003c/article>\n  `\n    )\n    .join(\"\");\n}\n\nshowProducts(\"all\");"}, {"id": "js-2", "file": "js", "fname": "script.js", "title": "Toast, Open Cart, Filters", "desc": "Functions to open and close the cart, the toast message, and live filter buttons.", "learn": ["addEventListener", "classList.add / remove", "setTimeout", "querySelectorAll + forEach"], "code": "// Show a small message (toast)\nlet toastTimer;\n\nfunction showToast(message) {\n  toast.textContent = message;\n  toast.classList.add(\"show\");\n\n  clearTimeout(toastTimer);\n  toastTimer = setTimeout(() => {\n    toast.classList.remove(\"show\");\n  }, 2000);\n}\n\n// Open and close the cart drawer\nfunction openCart() {\n  cartPanel.classList.add(\"open\");\n  overlay.classList.add(\"show\");\n}\n\nfunction closeCart() {\n  cartPanel.classList.remove(\"open\");\n  overlay.classList.remove(\"show\");\n}\n\ncartBtn.addEventListener(\"click\", openCart);\noverlay.addEventListener(\"click\", closeCart);\ndocument.getElementById(\"close-cart\").addEventListener(\"click\", closeCart);\n\ndocument.addEventListener(\"keydown\", (e) => {\n  if (e.key === \"Escape\") closeCart();\n});\n\n// Filter buttons\nconst filterBtns = document.querySelectorAll(\".filter\");\n\nfilterBtns.forEach((btn) => {\n  btn.addEventListener(\"click\", () => {\n    filterBtns.forEach((b) => b.classList.remove(\"active\"));\n    btn.classList.add(\"active\");\n    showProducts(btn.dataset.cat);\n    showToast(btn.textContent + \" products shown\");\n  });\n});"}, {"id": "js-3", "file": "js", "fname": "script.js", "title": "Cart Logic", "desc": "updateCart draws the cart on screen and addToCart puts a product into it.", "learn": ["find()", "spread { ...obj }", "event delegation", "dataset.id"], "code": "// Draw the cart on screen\nfunction updateCart() {\n  let total = 0;\n  let count = 0;\n\n  cartItems.innerHTML =\n    cart.length === 0\n      ? '\u003cli class=\"empty\">Your cart is empty\u003c/li>'\n      : cart\n          .map((item) => {\n            total += item.price * item.qty;\n            count += item.qty;\n            return `\n      \u003cli>\n        \u003cspan class=\"ci-icon\">${item.icon}\u003c/span>\n        \u003cdiv class=\"ci-info\">\n          \u003cb>${item.name}\u003c/b>\n          \u003csmall>${rupees(item.price)} x ${item.qty}\u003c/small>\n        \u003c/div>\n        \u003cdiv class=\"qty\">\n          \u003cbutton data-id=\"${item.id}\" data-change=\"-1\">-\u003c/button>\n          \u003cspan>${item.qty}\u003c/span>\n          \u003cbutton data-id=\"${item.id}\" data-change=\"1\">+\u003c/button>\n        \u003c/div>\n      \u003c/li>\n    `;\n          })\n          .join(\"\");\n\n  cartCount.textContent = count;\n  cartTotal.innerHTML = rupees(total);\n}\n\n// Put the product in the cart\nfunction addToCart(id) {\n  const item = cart.find((c) => c.id === id);\n\n  if (item) {\n    item.qty++;\n  } else {\n    const product = products.find((p) => p.id === id);\n    cart.push({ ...product, qty: 1 });\n  }\n\n  updateCart();\n  showToast(\"Added to cart\");\n\n  // Trick to replay the animation\n  cartBtn.classList.remove(\"bump\");\n  void cartBtn.offsetWidth;\n  cartBtn.classList.add(\"bump\");\n}\n\n// Catch clicks on the Add to Cart button\ngrid.addEventListener(\"click\", (e) => {\n  const btn = e.target.closest(\".add-btn\");\n  if (btn) addToCart(Number(btn.dataset.id));\n});"}, {"id": "js-4", "file": "js", "fname": "script.js", "title": "Quantity and Checkout", "desc": "The + / - buttons, removing items and placing the order at checkout.", "learn": ["filter()", "reduce()", "early return", "Number()"], "code": "// Change quantity with + or -\nfunction changeQty(id, change) {\n  const item = cart.find((c) => c.id === id);\n  item.qty += change;\n\n  if (item.qty \u003c= 0) {\n    cart = cart.filter((c) => c.id !== id);\n  }\n\n  updateCart();\n}\n\ncartItems.addEventListener(\"click\", (e) => {\n  const btn = e.target.closest(\"button\");\n  if (!btn) return;\n  changeQty(Number(btn.dataset.id), Number(btn.dataset.change));\n});\n\n// Checkout\ndocument.getElementById(\"checkout-btn\").addEventListener(\"click\", () => {\n  if (cart.length === 0) {\n    showToast(\"Add something to your cart first\");\n    return;\n  }\n\n  const total = cart.reduce((sum, c) => sum + c.price * c.qty, 0);\n  showToast(\"Order placed! Total Rs. \" + total);\n\n  cart = [];\n  updateCart();\n  closeCart();\n});"}];
+
+var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function $(id) { return document.getElementById(id); }
+var el = {
+  app: $('app'), lessons: $('lessons'), kicker: $('kicker'), title: $('title'), desc: $('desc'), chips: $('chips'),
+  infoText: $('infoText'), code: $('code'), fileRef: $('fileRef'), fileEd: $('fileEd'), input: $('input'), mirror: $('mirror'),
+  gut: $('gut'), status: $('status'), pos: $('pos'), done: $('done'), frame: $('frame'), con: $('console'),
+  sPct: $('sPct'), sTime: $('sTime'), sWpm: $('sWpm'), sAcc: $('sAcc'), barFill: $('barFill'),
+  overallTxt: $('overallTxt'), overallBar: $('overallBar'), strict: $('strict'), editPane: $('editPane'),
+  doneTitle: $('doneTitle'), dTime: $('dTime'), dWpm: $('dWpm'), dAcc: $('dAcc'), next: $('next'), again: $('again'), reset: $('reset')
+};
+
+/* ---------- storage (sirf ek viewer ke browser me) ---------- */
+var GH = true;
+var mem = {};
+var touched = false;
+var sync = { ref: null, timer: 0, fn: null };
+var gh = { token: '', id: '' };
+var booting = false;
+
+function lsSet(k) { try { localStorage.setItem('dukaan:' + k, JSON.stringify(mem[k])); } catch (e) {} }
+function stamp(t) { try { localStorage.setItem('dukaan-ts', String(t || Date.now())); } catch (e) {} }
+function localTs() { try { return Number(localStorage.getItem('dukaan-ts')) || 0; } catch (e) { return 0; } }
+(function collectLocal() {
+  try { for (var i = 0; i < localStorage.length; i++) { var key = localStorage.key(i); if (key.indexOf('dukaan:') === 0) mem[key.slice(7)] = JSON.parse(localStorage.getItem(key)); } } catch (e) {}
+})();
+
+function flushRemote() {
+  clearTimeout(sync.timer);
+  if (!sync.fn) return;
+  var f = sync.fn; sync.fn = null; f();
+}
+function pushRemote() {
+  if (!sync.ref && !gh.id) return;
+  clearTimeout(sync.timer);
+  sync.fn = function () {
+    var payload = { kv: mem, savedAt: localTs() || Date.now() };
+    if (sync.ref) { try { sync.ref.set(payload).catch(function () {}); } catch (e) {} }
+    if (gh.id) ghSave(payload);
+  };
+  sync.timer = setTimeout(flushRemote, 1200);
+}
+document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') flushRemote(); });
+
+var store = {
+  get: function (k, d) { try { var v = localStorage.getItem('dukaan:' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set: function (k, v) { mem[k] = v; lsSet(k); if (!booting) stamp(); pushRemote(); },
+  del: function (k) { delete mem[k]; try { localStorage.removeItem('dukaan:' + k); } catch (e) {} if (!booting) stamp(); pushRemote(); }
+};
+
+/* bring state in from a remote copy (claude db, gist or imported file) */
+function applyState() {
+  doneMap = store.get('done', {}); state.strict = !!store.get('strict', false); el.strict.checked = state.strict;
+  var cur = Number(store.get('cur', state.i));
+  booting = true;
+  if (!touched && cur >= 0 && cur < LESSONS.length) loadLesson(cur); else updatePills();
+  booting = false;
+}
+function mergeRemote(remote, force) {
+  var rk = remote.kv || {};
+  var remoteWins = force || (remote.savedAt || 0) > localTs();
+  var done = Object.assign({}, mem.done || {}, rk.done || {});
+  Object.keys(rk).forEach(function (k) {
+    if (remoteWins || !(k in mem)) { mem[k] = rk[k]; lsSet(k); }
+  });
+  mem.done = done; lsSet('done');
+  if (remoteWins && !force && remote.savedAt) stamp(remote.savedAt);
+  applyState();
+}
+
+function initSync() {
+  if (!window.claude || !window.claude.use) return;
+  Promise.all([window.claude.use('db'), window.claude.use('user')]).then(function (r) {
+    var db = r[0], user = r[1];
+    if (!db || !user) return null;
+    return user.id().then(function (id) {
+      if (!id) return null;
+      var ref = db.collection('data/users/' + id).doc('progress');
+      return ref.get().then(function (snap) {
+        var remote = snap.exists ? snap.data() : null;
+        sync.ref = ref;
+        if (remote && remote.kv) mergeRemote(remote, false); else pushRemote();
+        if (remote && remote.kv) pushRemote();
+      });
+    });
+  }).catch(function () {});
+}
+
+/* ---------- GitHub Gist sync (for static hosting) ---------- */
+var GIST_DESC = 'Dukaan Code Lab progress', GIST_FILE = 'dukaan-progress.json';
+function ghStatus(msg, bad) { var n = document.getElementById('ghStatus'); if (n) { n.textContent = msg; n.className = 'ghstatus' + (bad ? ' err' : ''); } var b = document.getElementById('syncBtn'); if (b) b.textContent = gh.id ? 'Synced' : 'Sync'; }
+function ghFetch(path, opts) {
+  opts = opts || {};
+  opts.headers = { 'Authorization': 'Bearer ' + gh.token, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' };
+  return fetch('https://api.github.com' + path, opts).then(function (r) {
+    if (!r.ok) throw new Error(r.status === 401 ? 'Token rejected (401)' : 'GitHub error ' + r.status);
+    return r.json();
+  });
+}
+function ghSave(payload) {
+  var files = {}; files[GIST_FILE] = { content: JSON.stringify(payload) };
+  ghFetch('/gists/' + gh.id, { method: 'PATCH', body: JSON.stringify({ files: files }), keepalive: true })
+    .then(function () { ghStatus('Saved to your Gist at ' + new Date().toLocaleTimeString()); })
+    .catch(function (e) { ghStatus('Could not save: ' + e.message, true); });
+}
+function ghConnect(token) {
+  gh.token = token; gh.id = '';
+  ghStatus('Connecting...');
+  return ghFetch('/gists?per_page=100').then(function (list) {
+    var g = list.filter(function (x) { return x.description === GIST_DESC; })[0];
+    if (g) return ghFetch('/gists/' + g.id);
+    var files = {}; files[GIST_FILE] = { content: JSON.stringify({ kv: mem, savedAt: localTs() || Date.now() }) };
+    return ghFetch('/gists', { method: 'POST', body: JSON.stringify({ description: GIST_DESC, public: false, files: files }) });
+  }).then(function (g) {
+    gh.id = g.id;
+    var f = g.files && g.files[GIST_FILE], remote = null;
+    try { remote = f && JSON.parse(f.content); } catch (e) {}
+    try { localStorage.setItem('dukaan-gh', JSON.stringify({ token: gh.token, id: gh.id })); } catch (e) {}
+    if (remote && remote.kv) { mergeRemote(remote, false); }
+    pushRemote();
+    ghStatus('Connected. Progress now syncs to your private Gist.');
+  }).catch(function (e) { gh.token = ''; gh.id = ''; ghStatus(e.message, true); });
+}
+function ghDisconnect() {
+  gh.token = ''; gh.id = ''; try { localStorage.removeItem('dukaan-gh'); } catch (e) {}
+  ghStatus('Disconnected. Progress stays in this browser only.');
+}
+function setSaved() {
+  var b = $('saveBtn'); if (!b) return;
+  b.textContent = 'Saved \u2713';
+  clearTimeout(setSaved.t);
+  setSaved.t = setTimeout(function () { b.textContent = 'Save'; }, 1800);
+}
+function initGh() {
+  if (!GH) { $('saveBtn').addEventListener('click', setSaved); return; }
+  $('saveBtn').addEventListener('click', function () {
+    pushRemote(); flushRemote();
+    stamp();
+    if (gh.id) ghStatus('Saved to your Gist and this browser at ' + new Date().toLocaleTimeString());
+    else if (GH) ghStatus('Saved in this browser. Press Sync to keep it on other devices too.');
+    setSaved();
+  });
+  var btn = $('syncBtn'), modal = $('syncModal');
+  btn.hidden = false;
+  btn.addEventListener('click', function () { modal.hidden = false; $('ghToken').focus(); });
+  $('syncClose').addEventListener('click', function () { modal.hidden = true; });
+  modal.addEventListener('click', function (e) { if (e.target === modal) modal.hidden = true; });
+  $('ghConnect').addEventListener('click', function () { var t = $('ghToken').value.trim(); if (t) { ghConnect(t).then(function () { $('ghToken').value = ''; }); } });
+  $('ghDisc').addEventListener('click', ghDisconnect);
+  $('exportBtn').addEventListener('click', function () {
+    var blob = new Blob([JSON.stringify({ kv: mem, savedAt: localTs() || Date.now() })], { type: 'application/json' });
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'dukaan-progress.json';
+    document.body.appendChild(a); a.click(); a.remove();
+  });
+  $('importFile').addEventListener('change', function (e) {
+    var f = e.target.files[0]; if (!f) return;
+    var r = new FileReader();
+    r.onload = function () { try { var o = JSON.parse(r.result); if (!o.kv) throw 0; mergeRemote(o, true); stamp(); pushRemote(); ghStatus('Progress imported.'); } catch (err) { ghStatus('That file is not a progress file.', true); } };
+    r.readAsText(f);
+  });
+  var cfg = null;
+  try { cfg = JSON.parse(localStorage.getItem('dukaan-gh') || 'null'); } catch (e) {}
+  if (cfg && cfg.token && cfg.id) {
+    gh.token = cfg.token; gh.id = cfg.id;
+    ghFetch('/gists/' + gh.id).then(function (g) {
+      var f = g.files && g.files[GIST_FILE], remote = null;
+      try { remote = f && JSON.parse(f.content); } catch (e) {}
+      if (remote && remote.kv) mergeRemote(remote, false);
+      pushRemote();
+      ghStatus('Connected. Progress syncs to your private Gist.');
+    }).catch(function (e) { ghStatus('Sync offline: ' + e.message, true); });
+  } else ghStatus('Not connected. Progress is saved in this browser only.');
+}
+
+/* ---------- tokenizer (syntax colors) ---------- */
+function prevCh(t, i) { return i > 0 ? t[i - 1] : ''; }
+function atLineStart(t, i) { var j = i - 1; while (j >= 0 && (t[j] === ' ' || t[j] === '\t')) j--; return j < 0 || t[j] === '\n'; }
+var RULES = {
+  html: [
+    ['com', /<!--[\s\S]*?(?:-->|$)/y],
+    ['key', /<!DOCTYPE[^>]*>?/iy],
+    ['tag', /<\/?[a-zA-Z][\w-]*/y],
+    ['tag', /\/?>/y],
+    ['str', /"[^"\n]*"|'[^'\n]*'/y],
+    ['ent', /&#?\w+;/y],
+    ['attr', /[a-zA-Z_@:][\w:.-]*(?==)/y]
+  ],
+  css: [
+    ['com', /\/\*[\s\S]*?(?:\*\/|$)/y],
+    ['str', /"[^"\n]*"|'[^'\n]*'/y],
+    ['key', /@[\w-]+/y],
+    ['prop', /--[\w-]+(?=\s*:)/y],
+    ['prop', /[a-z-]+(?=[ \t]*:)/y, function (t, i) { return atLineStart(t, i); }],
+    ['num', /#[0-9a-fA-F]{3,8}\b/y],
+    ['sel', /[.#][a-zA-Z_][\w-]*/y],
+    ['sel', /::?[a-z][\w-]*/y, function (t, i) { return t[i - 1] !== ' ' || true; }],
+    ['fn', /[a-zA-Z-]+(?=\()/y],
+    ['num', /-?\d*\.?\d+(?:px|em|rem|vh|vw|%|ms|s|deg|fr)?/y, function (t, i) { return !/[\w.-]/.test(prevCh(t, i)); }]
+  ],
+  js: [
+    ['com', /\/\/[^\n]*|\/\*[\s\S]*?(?:\*\/|$)/y],
+    ['str', /`(?:\\[\s\S]|[^`\\])*(?:`|$)/y],
+    ['str', /"(?:\\.|[^"\\\n])*"?|'(?:\\.|[^'\\\n])*'?/y],
+    ['num', /\d+(?:\.\d+)?/y, function (t, i) { return !/[\w$.]/.test(prevCh(t, i)); }],
+    ['key', /\b(?:const|let|var|function|return|if|else|new|true|false|null|undefined|this|typeof|of|in)\b/y],
+    ['fn', /[A-Za-z_$][\w$]*(?=\()/y],
+    ['prop', /[A-Za-z_$][\w$]*/y, function (t, i) { return prevCh(t, i) === '.'; }],
+    ['key', /=>/y]
+  ]
+};
+var FALL = { html: /\w+/y, css: /[a-zA-Z_][\w-]*/y, js: /[A-Za-z_$][\w$]*/y };
+
+function tokenize(text, lang) {
+  var rules = RULES[lang], fall = FALL[lang], out = [], i = 0, plain = '';
+  function flush() { if (plain) { out.push({ t: plain, c: '' }); plain = ''; } }
+  while (i < text.length) {
+    var hit = null;
+    for (var r = 0; r < rules.length; r++) {
+      var rule = rules[r];
+      if (rule[2] && !rule[2](text, i)) continue;
+      rule[1].lastIndex = i;
+      var m = rule[1].exec(text);
+      if (m && m[0].length) { hit = [rule[0], m[0]]; break; }
+    }
+    if (hit) { flush(); out.push({ t: hit[1], c: hit[0] }); i += hit[1].length; }
+    else {
+      fall.lastIndex = i;
+      var f = fall.exec(text);
+      var s = f && f[0].length ? f[0] : text[i];
+      plain += s; i += s.length;
+    }
+  }
+  flush();
+  return out;
+}
+function toLines(tokens) {
+  var lines = [[]];
+  tokens.forEach(function (tk) {
+    var parts = tk.t.split('\n');
+    parts.forEach(function (p, idx) {
+      if (idx > 0) lines.push([]);
+      if (p) lines[lines.length - 1].push({ t: p, c: tk.c });
+    });
+  });
+  return lines;
+}
+function esc(s) { return s.replace(/[&<>]/g, function (c) { return c === '&' ? '&amp;' : c === '<' ? '&lt;' : '&gt;'; }); }
+function span(txt, c, x) {
+  if (!txt) return '';
+  var cl = ((c ? 's-' + c : '') + (x ? ' ' + x : '')).trim();
+  return cl ? '<span class="' + cl + '">' + esc(txt) + '</span>' : esc(txt);
+}
+function lineHTML(tokens, cursor) {
+  var out = '', p = 0;
+  tokens.forEach(function (tk) {
+    var t = tk.t, e = p + t.length;
+    if (cursor < 0) out += span(t, tk.c);
+    else if (e <= cursor) out += span(t, tk.c, 'ty');
+    else if (p > cursor) out += span(t, tk.c);
+    else {
+      var a = cursor - p;
+      out += span(t.slice(0, a), tk.c, 'ty') + '<span class="nx ' + (tk.c ? 's-' + tk.c : '') + '">' + esc(t[a]) + '</span>' + span(t.slice(a + 1), tk.c);
+    }
+    p = e;
+  });
+  if (cursor >= 0 && cursor >= p) out += '<span class="nx enter">&#8629;</span>';
+  return out;
+}
+
+/* ---------- typing check ---------- */
+function lead(s) { var n = 0; while (n < s.length && (s[n] === ' ' || s[n] === '\t')) n++; return n; }
+
+function analyze(typed, L, strict) {
+  var T = L.lines, U = typed.split('\n');
+  var tIdx = [];
+  T.forEach(function (l, i) { if (strict || l.trim() !== '') tIdx.push(i); });
+  var flat = new Array(typed.length).fill(0);
+  var done = new Map();
+  var k = 0, pos = 0, good = 0, bad = 0, mismatch = false, cursor = null;
+  for (var i = 0; i < U.length; i++) {
+    var u = U[i], last = i === U.length - 1;
+    var skip = u.trim() === '' && (!strict || k >= tIdx.length);
+    if (skip) {
+      if (last && k < tIdx.length) { var nt = tIdx[k]; cursor = { line: nt, col: strict ? 0 : lead(T[nt]) }; }
+      pos += u.length + 1;
+      continue;
+    }
+    var ti = k < tIdx.length ? tIdx[k] : -1; k++;
+    var t = ti >= 0 ? T[ti] : '';
+    var lu = strict ? 0 : lead(u), lt = strict ? 0 : lead(t);
+    for (var j = 0; j < u.length; j++) {
+      var s = 0;
+      if (j >= lu) { var tj = lt + (j - lu); s = (ti >= 0 && tj < t.length && u[j] === t[tj]) ? 1 : 2; }
+      flat[pos + j] = s;
+      if (s === 1) good++; else if (s === 2) bad++;
+    }
+    var eq = ti >= 0 && (strict ? u.replace(/\s+$/, '') === t.replace(/\s+$/, '') : u.trim() === t.trim());
+    if (!eq) mismatch = true;
+    if (ti >= 0 && !last) done.set(ti, eq ? 'ok' : 'bad');
+    if (last && ti >= 0) cursor = { line: ti, col: lt + (u.length - lu), eq: eq };
+    pos += u.length + 1;
+  }
+  var complete = !mismatch && k === tIdx.length && k > 0;
+  var total = L.total[strict ? 1 : 0];
+  var pct = Math.min(complete ? 100 : 99, Math.floor(100 * good / total));
+  return { flat: flat, done: done, cursor: cursor, complete: complete, good: good, bad: bad, pct: pct };
+}
+
+function renderMirror(typed, flat, lang) {
+  var toks = tokenize(typed, lang), out = '', p = 0;
+  toks.forEach(function (tk) {
+    var i = 0, n = tk.t.length;
+    while (i < n) {
+      var s = flat[p + i], j = i + 1;
+      while (j < n && flat[p + j] === s) j++;
+      out += span(tk.t.slice(i, j), tk.c, s === 2 ? 'bad' : '');
+      i = j;
+    }
+    p += n;
+  });
+  return out + '\n';
+}
+
+/* ---------- state ---------- */
+var state = {
+  i: 0, strict: !!store.get('strict', false), t0: 0, tEnd: 0, keys: 0, mistakes: 0, prevBad: 0, prevLen: 0,
+  completed: false, A: null, curLine: -1, curCol: -2, gutN: 0, hold: 0, loading: false, run: 0, pvErr: null
+};
+var doneMap = store.get('done', {});
+var pills = [];
+
+LESSONS.forEach(function (L) {
+  L.lines = L.code.split('\n');
+  L.total = [0, 0];
+  L.lines.forEach(function (l) {
+    L.total[1] += l.length;
+    if (l.trim() !== '') L.total[0] += l.length - lead(l);
+  });
+});
+
+/* ---------- lesson strip ---------- */
+function buildPills() {
+  [['html', 'HTML'], ['css', 'CSS'], ['js', 'JavaScript']].forEach(function (g) {
+    var wrap = document.createElement('div');
+    wrap.className = 'group';
+    var lab = document.createElement('span');
+    lab.className = 'group-label'; lab.textContent = g[1];
+    wrap.appendChild(lab);
+    LESSONS.forEach(function (L, i) {
+      if (L.file !== g[0]) return;
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'pill';
+      b.innerHTML = '<span class="n"></span><span></span>';
+      b.lastChild.textContent = L.title;
+      b.addEventListener('click', function () { loadLesson(i); });
+      wrap.appendChild(b);
+      pills[i] = b;
+    });
+    el.lessons.appendChild(wrap);
+  });
+}
+function updatePills() {
+  var n = 0;
+  LESSONS.forEach(function (L, i) {
+    var d = !!doneMap[L.id]; if (d) n++;
+    var b = pills[i];
+    b.className = 'pill' + (d ? ' done' : '') + (i === state.i ? ' active' : '');
+    b.firstChild.textContent = d ? '✓' : String(i + 1);
+    if (i === state.i) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+  });
+  el.overallTxt.textContent = n + ' / ' + LESSONS.length + ' lessons';
+  el.overallBar.style.width = (100 * n / LESSONS.length) + '%';
+}
+
+/* ---------- left reference panel ---------- */
+function buildRef(L) {
+  L.tokLines = toLines(tokenize(L.code, L.file));
+  el.code.innerHTML = '';
+  L.rows = L.tokLines.map(function (tl, i) {
+    var d = document.createElement('div'); d.className = 'ln';
+    var no = document.createElement('span'); no.className = 'no'; no.textContent = i + 1;
+    var lc = document.createElement('span'); lc.className = 'lc'; lc.innerHTML = lineHTML(tl, -1);
+    d.appendChild(no); d.appendChild(lc);
+    el.code.appendChild(d);
+    return { d: d, lc: lc, state: '' };
+  });
+  el.code.scrollTop = 0;
+}
+function keepVisible(row) {
+  var c = el.code, top = row.offsetTop, h = row.offsetHeight;
+  if (top < c.scrollTop + 30 || top + h > c.scrollTop + c.clientHeight - 70) {
+    c.scrollTo({ top: Math.max(0, top - c.clientHeight * 0.35), behavior: reduce ? 'auto' : 'smooth' });
+  }
+}
+function paintRef(A) {
+  var L = LESSONS[state.i], rows = L.rows;
+  var curLine = A.cursor ? A.cursor.line : -1;
+  rows.forEach(function (r, i) {
+    var s = '', dt = A.done.get(i);
+    if (A.complete) s = 'done';
+    else if (dt === 'ok') s = 'done';
+    else if (dt === 'bad') s = 'bad';
+    else if (i === curLine) s = 'cur';
+    else if (!state.strict && L.lines[i].trim() === '' && curLine >= 0 && i < curLine) s = 'done';
+    if (r.state !== s) {
+      r.d.className = 'ln' + (s ? ' ' + s : '') + (s === 'done' && r.state !== 'done' && !state.loading ? ' fresh' : '');
+      r.state = s;
+    }
+  });
+  var showLine = A.complete ? -1 : curLine;
+  var col = showLine >= 0 ? A.cursor.col : -2;
+  if (state.curLine !== showLine || state.curCol !== col) {
+    if (state.curLine >= 0 && rows[state.curLine]) rows[state.curLine].lc.innerHTML = lineHTML(L.tokLines[state.curLine], -1);
+    if (showLine >= 0) { rows[showLine].lc.innerHTML = lineHTML(L.tokLines[showLine], col); }
+    if (showLine >= 0 && showLine !== state.curLine) keepVisible(rows[showLine].d);
+    state.curLine = showLine; state.curCol = col;
+  }
+}
+
+/* ---------- stats ---------- */
+function fmt(sec) { sec = Math.floor(sec); var m = Math.floor(sec / 60), s = sec % 60; return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s; }
+function accuracy() { return state.keys ? Math.max(0, Math.round(100 * (1 - state.mistakes / state.keys))) : 100; }
+function updateStats() {
+  var A = state.A;
+  var now = state.tEnd || Date.now();
+  var sec = state.t0 ? (now - state.t0) / 1000 : 0;
+  el.sTime.textContent = fmt(sec);
+  el.sWpm.textContent = A && sec >= 4 ? String(Math.round((A.good / 5) / (sec / 60))) : '--';
+  el.sAcc.textContent = state.keys ? accuracy() + '%' : '--';
+  var pct = A ? A.pct : 0;
+  el.sPct.textContent = pct + '%';
+  el.barFill.style.width = pct + '%';
+}
+setInterval(function () { if (state.t0 && !state.tEnd) updateStats(); }, 500);
+
+/* ---------- status line ---------- */
+function setStatus(cls, msg) { el.status.className = 'status ' + cls; el.status.textContent = msg; }
+function statusFor(A, typed) {
+  if (A.complete) return ['ok', 'All correct. Lesson complete!'];
+  if (A.bad > 0) return ['err', A.bad + (A.bad === 1 ? ' mistake' : ' mistakes') + '. Delete the red characters and retype.'];
+  if (!typed.length) return ['', 'Read the code on the left and type it here.'];
+  if (A.cursor && A.cursor.eq && A.cursor.col >= LESSONS[state.i].lines[A.cursor.line].length) return ['ok', 'Line done. Press Enter.'];
+  return ['ok', 'Going well. Keep going.'];
+}
+
+/* ---------- editor ---------- */
+function updateGutter(n) {
+  if (state.gutN === n) return;
+  var h = '';
+  for (var i = 1; i <= n; i++) h += '<div>' + i + '</div>';
+  el.gut.innerHTML = h; state.gutN = n;
+  el.gut.scrollTop = el.input.scrollTop;
+}
+function updatePos() {
+  var p = el.input.selectionStart, before = el.input.value.slice(0, p);
+  el.pos.textContent = 'Ln ' + before.split('\n').length + ', Col ' + (p - before.lastIndexOf('\n'));
+}
+
+function refresh(silent) {
+  var L = LESSONS[state.i], typed = el.input.value;
+  var A = analyze(typed, L, state.strict);
+  state.A = A;
+  el.mirror.innerHTML = renderMirror(typed, A.flat, L.file);
+  updateGutter(Math.max(1, typed.split('\n').length));
+  paintRef(A);
+
+  if (A.bad > state.prevBad) state.mistakes += A.bad - state.prevBad;
+  state.prevBad = A.bad;
+
+  if (Date.now() > state.hold) { var st = statusFor(A, typed); setStatus(st[0], st[1]); }
+  if (A.complete && !state.completed) { state.completed = true; if (!silent) finishLesson(); else state.tEnd = state.tEnd || Date.now(); }
+  else if (!A.complete && state.completed) { state.completed = false; state.tEnd = 0; hideDone(); }
+  updateStats();
+  updatePos();
+  if (!silent) store.set('draft:' + L.id, typed);
+  schedulePreview(silent ? 0 : 350);
+}
+
+function onInput() {
+  touched = true;
+  var v = el.input.value;
+  if (!state.t0 && v.length) state.t0 = Date.now();
+  if (v.length > state.prevLen) state.keys += v.length - state.prevLen;
+  state.prevLen = v.length;
+  refresh(false);
+}
+
+function nudge(msg) {
+  state.hold = Date.now() + 2600;
+  setStatus('warn', msg);
+  el.editPane.classList.remove('shake'); void el.editPane.offsetWidth; el.editPane.classList.add('shake');
+  setTimeout(function () { if (Date.now() >= state.hold - 50) refresh(true); }, 2650);
+}
+
+el.input.addEventListener('input', onInput);
+el.input.addEventListener('scroll', function () { el.mirror.scrollTop = el.input.scrollTop; el.mirror.scrollLeft = el.input.scrollLeft; el.gut.scrollTop = el.input.scrollTop; });
+el.input.addEventListener('keydown', function (e) {
+  if (e.key === 'Tab' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    e.preventDefault();
+    var ok = false;
+    try { ok = document.execCommand('insertText', false, '  '); } catch (err) {}
+    if (!ok) {
+      var s = el.input.selectionStart, en = el.input.selectionEnd;
+      el.input.setRangeText('  ', s, en, 'end');
+      onInput();
+    }
+  }
+});
+['paste', 'drop'].forEach(function (ev) {
+  el.input.addEventListener(ev, function (e) { e.preventDefault(); nudge('Paste is disabled. Type it by hand to learn.'); });
+});
+['keyup', 'click'].forEach(function (ev) { el.input.addEventListener(ev, updatePos); });
+el.reset.addEventListener('click', function () {
+  el.input.value = ''; state.t0 = 0; state.tEnd = 0; state.keys = 0; state.mistakes = 0; state.prevBad = 0; state.prevLen = 0;
+  state.completed = false; hideDone(); store.del('draft:' + LESSONS[state.i].id);
+  refresh(true); el.input.focus();
+});
+el.strict.addEventListener('change', function () {
+  state.strict = el.strict.checked; store.set('strict', state.strict);
+  state.completed = false; hideDone(); state.curLine = -1; state.curCol = -2;
+  LESSONS[state.i].rows.forEach(function (r) { r.state = '?'; });
+  refresh(true);
+});
+
+/* ---------- completion ---------- */
+function confetti() {
+  if (reduce) return;
+  var colors = ['var(--accent)', 'var(--mango)', 'var(--good)', 'var(--bad)'];
+  for (var n = 0; n < 34; n++) {
+    var p = document.createElement('i'); p.className = 'cf';
+    var a = Math.random() * Math.PI * 2, d = 110 + Math.random() * 170;
+    p.style.cssText = '--x:' + (Math.cos(a) * d).toFixed(0) + 'px;--y:' + (Math.sin(a) * d - 90).toFixed(0) + 'px;--r:' + (Math.random() * 720 - 360).toFixed(0) + 'deg;background:' + colors[n % 4] + ';animation-delay:' + (Math.random() * 0.12).toFixed(2) + 's';
+    el.done.appendChild(p);
+    (function (q) { setTimeout(function () { q.remove(); }, 1600); })(p);
+  }
+}
+function finishLesson() {
+  var L = LESSONS[state.i];
+  state.tEnd = Date.now();
+  doneMap[L.id] = true; store.set('done', doneMap); updatePills();
+  updateStats();
+  el.doneTitle.textContent = L.title + ' done';
+  el.dTime.textContent = el.sTime.textContent;
+  el.dWpm.textContent = el.sWpm.textContent === '--' ? '--' : el.sWpm.textContent + ' wpm';
+  el.dAcc.textContent = accuracy() + '%';
+  var last = state.i === LESSONS.length - 1;
+  el.next.textContent = last ? 'Back to lesson 1' : 'Next lesson';
+  el.done.classList.add('show');
+  confetti();
+  setTimeout(function () { if (el.done.classList.contains('show')) el.next.focus({ preventScroll: true }); }, 500);
+}
+function hideDone() { el.done.classList.remove('show'); }
+el.next.addEventListener('click', function () { loadLesson((state.i + 1) % LESSONS.length); });
+el.again.addEventListener('click', function () { el.reset.click(); });
+
+/* ---------- live preview ---------- */
+var pvTimer = 0;
+function schedulePreview(delay) { clearTimeout(pvTimer); pvTimer = setTimeout(runPreview, delay); }
+var EMPTY_DOC = '<body style="margin:0;height:100vh;display:grid;place-items:center;font:15px system-ui,sans-serif;color:#667085;background:#fff"><p style="max-width:240px;text-align:center;line-height:1.5">Your shop appears here as you type.</p></body>';
+function buildDoc(idx, typed, run) {
+  var parts = { html: '', css: '', js: '' };
+  for (var i = 0; i < idx; i++) parts[LESSONS[i].file] += LESSONS[i].code + '\n';
+  parts[LESSONS[idx].file] += typed;
+  var html = parts.html;
+  if (!html.trim()) return EMPTY_DOC;
+  var hook = '<script>window.onerror=function(m){try{parent.postMessage({dk:' + run + ',err:String(m)},"*")}catch(e){}};<\/script>';
+  html = html.replace(/<link[^>]*href=["']style\.css["'][^>]*>/i, function () { return '<style>' + parts.css + '</style>'; });
+  html = html.replace(/<script[^>]*src=["']script\.js["'][^>]*>\s*<\/script>/i, function () { return '<script>' + parts.js + '<\/script>'; });
+  if (/<head>/i.test(html)) html = html.replace(/<head>/i, function (m) { return m + hook; });
+  else html = hook + html;
+  return html;
+}
+function runPreview() {
+  var run = ++state.run;
+  state.pvErr = null;
+  el.frame.srcdoc = buildDoc(state.i, el.input.value, run);
+  setConsole();
+}
+function setConsole() {
+  var err = state.pvErr, c = el.con;
+  if (err) {
+    if (state.completed) { c.className = 'console err'; c.textContent = 'Error: ' + err; }
+    else { c.className = 'console'; c.textContent = 'Code is incomplete (' + err + ')'; }
+  } else if (state.completed) { c.className = 'console ok'; c.textContent = 'Console: all good, no errors.'; }
+  else { c.className = 'console'; c.textContent = 'Console: no errors so far.'; }
+}
+window.addEventListener('message', function (e) {
+  if (e.source !== el.frame.contentWindow || !e.data || e.data.dk !== state.run) return;
+  state.pvErr = e.data.err; setConsole();
+});
+
+/* ---------- load lesson ---------- */
+function loadLesson(i) {
+  if (state.i !== i && LESSONS[state.i]) store.set('draft:' + LESSONS[state.i].id, el.input.value);
+  state.loading = true;
+  state.i = i; store.set('cur', i);
+  var L = LESSONS[i];
+  el.app.dataset.file = L.file;
+  el.kicker.textContent = 'Lesson ' + (i + 1) + ' / ' + LESSONS.length + '  ·  ' + L.fname;
+  el.title.textContent = L.title;
+  el.desc.textContent = L.desc;
+  el.chips.innerHTML = '';
+  L.learn.forEach(function (t) { var s = document.createElement('span'); s.className = 'chip'; s.textContent = t; el.chips.appendChild(s); });
+  el.fileRef.textContent = L.fname; el.fileEd.textContent = L.fname;
+  el.infoText.classList.remove('swap'); void el.infoText.offsetWidth; el.infoText.classList.add('swap');
+  buildRef(L);
+  hideDone();
+  state.t0 = 0; state.tEnd = 0; state.keys = 0; state.mistakes = 0; state.prevBad = 0; state.completed = false;
+  state.curLine = -1; state.curCol = -2; state.gutN = 0;
+  var draft = store.get('draft:' + L.id, '');
+  el.input.value = typeof draft === 'string' ? draft : '';
+  state.prevLen = el.input.value.length;
+  if (state.prevLen) state.t0 = Date.now();
+  el.input.scrollTop = 0;
+  refresh(true);
+  state.loading = false;
+  updatePills();
+  var pb = pills[i];
+  if (pb && pb.scrollIntoView) pb.scrollIntoView({ inline: 'center', block: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
+  if (window.matchMedia('(pointer: fine)').matches) el.input.focus({ preventScroll: true });
+}
+
+/* ---------- start ---------- */
+buildPills();
+el.strict.checked = state.strict;
+var start = Number(store.get('cur', 0));
+if (!(start >= 0 && start < LESSONS.length)) start = 0;
+booting = true;
+loadLesson(start);
+booting = false;
+initSync();
+initGh();
+})();
+</script>
+</body></html>
